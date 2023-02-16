@@ -5,12 +5,7 @@ const express = require("express");
 
 const path = require("path");
 
-const util = require('util');
-
-const db = require('./db/db.json');
-
-
-// const uuid = require('uuid');
+const notes = require('./db/db.json');
 
 const app = express();
 
@@ -21,13 +16,19 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname,'public')));
 
-app.set('view engine', 'ejs');
-
-
-
+//Create New Note
+function createNewNote(body, notesArray) {
+    const note = body;
+    notesArray.push(note);
+    fs.writeFileSync(
+      path.join(__dirname, './db/db.json'),
+      JSON.stringify({ notes: notesArray }, null, 2)
+    );
+    return note;
+  };  
 
 //Routes
-// app.get('/', (req, res) => res.send('Visit http://localhost:3001/api'));
+
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, './public/index.html'));
@@ -37,46 +38,16 @@ app.get('/', (req, res) => {
 app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'notes.html'));
   });
-  
-app.get('/api/notes', async(req, res) => {
-   const notesPath = path.join(__dirname, 'db/db.json')
-    const readFile = fs.readFileSync(notesPath);
-    const notes = JSON.parse(readFile);
-      res.render('notes', {notes});  
-    console.log(notes);
-    
+
+  app.get('/api/notes', (req, res) => {
+    res.json(notes);
   });
 
-//   // POST Route for submitting feedback
-// app.post('/api/notes', (req, res) => {
-//     // Log that a POST request was received
-//     console.info(`${req.method} request received to submit note`);
-  
-//     // Destructuring assignment for the items in req.body
-//     const { title, text } = req.body;
-  
-//     // If all the required properties are present
-//     if (title && text) {
-//       // Variable for the object we will save
-//       const newNote = {
-//         title,
-//         text,
-//         //text_id: uuid(),
-//       };
-  
-//       readAndAppend(newNote, './db/db.json');
-  
-//       const response = {
-//         status: 'success',
-//         body: newNote,
-//       };
-  
-//       res.json(response);
-//     } else {
-//       res.json('Error in posting note');
-//     }
-//   });
-
+app.post('/api/notes', (req, res) => {
+  // req.body.id = generateUniqueId();
+  const note = createNewNote(req.body, notes);
+  res.json(note);
+});
 
 //Listener
   app.listen(PORT, () => {
