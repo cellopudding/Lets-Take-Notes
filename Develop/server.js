@@ -44,7 +44,7 @@ app.get('/notes', (req, res) => {
   });
 
 app.post('/api/notes', (req, res) => {
-  // req.body.id = generateUniqueId();
+  
   const note = createNewNote(req.body, notes);
   res.json(note);
 });
